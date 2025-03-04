@@ -34,11 +34,14 @@ Atlas Frontend is the user-facing application that brings territorial storytelli
 ##### 3. Post Creation Interface
 ![Create Post](screenshots/post-creation.png)
 
-##### 4. User Dashboard
-![User Dashboard](screenshots/user-dashboard.png)
+##### 4. User Post Drafts
+![User Dashboard](screenshots/user-drafts.png)
 
-##### 5. Mobile Responsive View
-![Mobile View](screenshots/mobile-view.png)
+##### 5. Categories Mobile Responsive View
+![Mobile View](screenshots/categories-mobile.png)
+
+##### 6. Tags Mobile Responsive View
+![Mobile View](screenshots/tags-mobile.png)
 
 ## 🏗️ Project Structure
 
