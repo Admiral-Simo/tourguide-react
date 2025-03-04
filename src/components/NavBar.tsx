@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Navbar,
   NavbarBrand,
@@ -14,8 +14,8 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-} from '@nextui-org/react';
-import { Plus, BookOpen, Edit3, LogOut, User, BookDashed } from 'lucide-react';
+} from "@nextui-org/react";
+import { Plus, BookOpen, Edit3, LogOut, User, BookDashed } from "lucide-react";
 
 interface NavBarProps {
   isAuthenticated: boolean;
@@ -35,9 +35,9 @@ const NavBar: React.FC<NavBarProps> = ({
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const menuItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Categories', path: '/categories' },
-    { name: 'Tags', path: '/tags' },
+    { name: "Home", path: "/" },
+    { name: "Categories", path: "/categories" },
+    { name: "Tags", path: "/tags" },
   ];
 
   return (
@@ -53,13 +53,17 @@ const NavBar: React.FC<NavBarProps> = ({
 
       <NavbarContent className="sm:hidden pr-3" justify="center">
         <NavbarBrand>
-          <Link to="/" className="font-bold text-inherit">Blog Platform</Link>
+          <Link to="/" className="font-bold text-inherit">
+            Tour Guide
+          </Link>
         </NavbarBrand>
       </NavbarContent>
 
       <NavbarContent className="hidden sm:flex gap-4" justify="start">
         <NavbarBrand>
-          <Link to="/" className="font-bold text-inherit">Blog Platform</Link>
+          <Link to="/" className="font-bold text-inherit">
+            Tour Guide
+          </Link>
         </NavbarBrand>
         {menuItems.map((item) => (
           <NavbarItem
@@ -70,8 +74,8 @@ const NavBar: React.FC<NavBarProps> = ({
               to={item.path}
               className={`text-sm ${
                 location.pathname === item.path
-                  ? 'text-primary'
-                  : 'text-default-600'
+                  ? "text-primary"
+                  : "text-default-600"
               }`}
             >
               {item.name}
@@ -116,11 +120,8 @@ const NavBar: React.FC<NavBarProps> = ({
                     name={userProfile?.name}
                   />
                 </DropdownTrigger>
-                <DropdownMenu aria-label="User menu">                
-                  <DropdownItem
-                    key="drafts"
-                    startContent={<Edit3 size={16} />}
-                  >
+                <DropdownMenu aria-label="User menu">
+                  <DropdownItem key="drafts" startContent={<Edit3 size={16} />}>
                     <Link to="/posts/drafts">My Drafts</Link>
                   </DropdownItem>
                   <DropdownItem
@@ -154,8 +155,8 @@ const NavBar: React.FC<NavBarProps> = ({
               to={item.path}
               className={`w-full ${
                 location.pathname === item.path
-                  ? 'text-primary'
-                  : 'text-default-600'
+                  ? "text-primary"
+                  : "text-default-600"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
