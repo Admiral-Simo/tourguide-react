@@ -35,7 +35,8 @@ const NavBar: React.FC<NavBarProps> = ({
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const menuItems = [
-    { name: "Home", path: "/" },
+    { name: "Home", path: "/map" },
+    { name: "Posts", path: "/" },
     { name: "Categories", path: "/categories" },
     { name: "Tags", path: "/tags" },
   ];

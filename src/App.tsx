@@ -9,11 +9,12 @@ import TagsPage from "./pages/TagsPage";
 import DraftsPage from "./pages/DraftsPage";
 import LoginPage from "./pages/LoginPage";
 import { AuthProvider, useAuth } from "./components/AuthContext";
+import { MapPage } from "./pages/MapPage";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -26,44 +27,58 @@ function AppContent() {
 
   return (
     <BrowserRouter>
-      <NavBar 
+      <NavBar
         isAuthenticated={isAuthenticated}
-        userProfile={user ? {
-          name: user.name,
-          avatar: undefined // Add avatar support if needed
-        } : undefined}
+        userProfile={
+          user
+            ? {
+                name: user.name,
+                avatar: undefined, // Add avatar support if needed
+              }
+            : undefined
+        }
         onLogout={logout}
       />
       <main className="container mx-auto py-6">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/map" element={<MapPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route 
-            path="/posts/new" 
+          <Route
+            path="/posts/new"
             element={
               <ProtectedRoute>
                 <EditPostPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route path="/posts/:id" element={<PostPage isAuthenticated={isAuthenticated}/>} />
-          <Route 
-            path="/posts/:id/edit" 
+          <Route
+            path="/posts/:id"
+            element={<PostPage isAuthenticated={isAuthenticated} />}
+          />
+          <Route
+            path="/posts/:id/edit"
             element={
               <ProtectedRoute>
                 <EditPostPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route path="/categories" element={<CategoriesPage isAuthenticated={isAuthenticated}/>} />
-          <Route path="/tags" element={<TagsPage isAuthenticated={isAuthenticated}/>} />
-          <Route 
-            path="/posts/drafts" 
+          <Route
+            path="/categories"
+            element={<CategoriesPage isAuthenticated={isAuthenticated} />}
+          />
+          <Route
+            path="/tags"
+            element={<TagsPage isAuthenticated={isAuthenticated} />}
+          />
+          <Route
+            path="/posts/drafts"
             element={
               <ProtectedRoute>
                 <DraftsPage />
               </ProtectedRoute>
-            } 
+            }
           />
         </Routes>
       </main>
