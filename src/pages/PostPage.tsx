@@ -237,9 +237,10 @@ const PostPage: React.FC<PostPageProps> = ({
           </div>
           <Divider />
           <ShowPostMapComponent
-            title={post.title}
-            lat={post.latitude}
-            lng={post.longitude}
+            pixelHeight={500}
+            posts={[
+              { title: post.title, lat: post.latitude, lng: post.longitude },
+            ]}
           />
         </CardFooter>
       </Card>
