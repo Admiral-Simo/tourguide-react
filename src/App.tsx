@@ -9,7 +9,7 @@ import TagsPage from "./pages/TagsPage";
 import DraftsPage from "./pages/DraftsPage";
 import LoginPage from "./pages/LoginPage";
 import { AuthProvider, useAuth } from "./components/AuthContext";
-import { MapPage } from "./pages/MapPage";
+import PostsPage from "./pages/PostsPage";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -42,7 +42,7 @@ function AppContent() {
       <main className="container mx-auto py-6">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/map" element={<MapPage />} />
+          <Route path="/posts" element={<PostsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/posts/new"
