@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -11,25 +11,26 @@ import {
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
-  DropdownItem
-} from '@nextui-org/react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Heading from '@tiptap/extension-heading';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
-import { 
-  Bold, 
-  Italic, 
-  Undo, 
+  DropdownItem,
+} from "@nextui-org/react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Heading from "@tiptap/extension-heading";
+import BulletList from "@tiptap/extension-bullet-list";
+import OrderedList from "@tiptap/extension-ordered-list";
+import ListItem from "@tiptap/extension-list-item";
+import {
+  Bold,
+  Italic,
+  Undo,
   Redo,
   List,
   ListOrdered,
   ChevronDown,
-  X
-} from 'lucide-react';
-import { Post, Category, Tag, PostStatus } from '../services/apiService';
+  X,
+} from "lucide-react";
+import { Post, Category, Tag, PostStatus } from "../services/apiService";
+import { CreateUpdatePostMapComponent } from "./CreateUpdatePostMapComponent";
 
 interface PostFormProps {
   initialPost?: Post | null;
@@ -39,6 +40,8 @@ interface PostFormProps {
     categoryId: string;
     tagIds: string[];
     status: PostStatus;
+    latitude: number; // Latitude of the post location
+    longitude: number; // Longitude of the post location
   }) => Promise<void>;
   onCancel: () => void;
   categories: Category[];
@@ -54,11 +57,13 @@ const PostForm: React.FC<PostFormProps> = ({
   availableTags,
   isSubmitting = false,
 }) => {
-  const [title, setTitle] = useState(initialPost?.title || '');
-  const [categoryId, setCategoryId] = useState(initialPost?.category?.id || '');
-  const [selectedTags, setSelectedTags] = useState<Tag[]>(initialPost?.tags || []);
+  const [title, setTitle] = useState(initialPost?.title || "");
+  const [categoryId, setCategoryId] = useState(initialPost?.category?.id || "");
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(
+    initialPost?.tags || [],
+  );
   const [status, setStatus] = useState<PostStatus>(
-    initialPost?.status || PostStatus.DRAFT
+    initialPost?.status || PostStatus.DRAFT,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -82,10 +87,11 @@ const PostForm: React.FC<PostFormProps> = ({
       }),
       ListItem,
     ],
-    content: initialPost?.content || '',
+    content: initialPost?.content || "",
     editorProps: {
       attributes: {
-        class: 'prose max-w-none focus:outline-none min-h-[400px] px-4 py-2 border rounded-lg',
+        class:
+          "prose max-w-none focus:outline-none min-h-[400px] px-4 py-2 border rounded-lg",
       },
     },
   });
@@ -103,18 +109,29 @@ const PostForm: React.FC<PostFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!title.trim()) {
-      newErrors.title = 'Title is required';
+    if (lat == null || lng == null) {
+      newErrors.location = "The location is required";
     }
-    if (!editor?.getHTML() || editor?.getHTML() === '<p></p>') {
-      newErrors.content = 'Content is required';
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+    }
+    if (!editor?.getHTML() || editor?.getHTML() === "<p></p>") {
+      newErrors.content = "Content is required";
     }
     if (!categoryId) {
-      newErrors.category = 'Category is required';
+      newErrors.category = "Category is required";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const [lat, setLat] = useState<number | undefined>(initialPost?.latitude);
+  const [lng, setLng] = useState<number | undefined>(initialPost?.longitude);
+
+  const locationSelectHandler = (lat: number, lng: number) => {
+    setLat(lat);
+    setLng(lng);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,10 +143,12 @@ const PostForm: React.FC<PostFormProps> = ({
 
     await onSubmit({
       title: title.trim(),
-      content: editor?.getHTML() || '',
+      content: editor?.getHTML() || "",
       categoryId: categoryId,
-      tagIds: selectedTags.map(tag => tag.id),
+      tagIds: selectedTags.map((tag) => tag.id),
       status,
+      latitude: lat!,
+      longitude: lng!,
     });
   };
 
@@ -140,7 +159,7 @@ const PostForm: React.FC<PostFormProps> = ({
   };
 
   const handleTagRemove = (tagToRemove: Tag) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+    setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleHeadingSelect = (level: number) => {
@@ -148,7 +167,7 @@ const PostForm: React.FC<PostFormProps> = ({
   };
 
   const suggestedTags = availableTags
-    .filter(tag => !selectedTags.includes(tag))
+    .filter((tag) => !selectedTags.includes(tag))
     .slice(0, 5);
 
   return (
@@ -165,7 +184,6 @@ const PostForm: React.FC<PostFormProps> = ({
               isRequired
             />
           </div>
-
           <div className="space-y-2">
             <div className="bg-default-100 p-2 rounded-lg mb-2 flex gap-2 flex-wrap items-center">
               <Dropdown>
@@ -182,13 +200,34 @@ const PostForm: React.FC<PostFormProps> = ({
                   onAction={(key) => handleHeadingSelect(Number(key))}
                   aria-label="Heading levels"
                 >
-                  <DropdownItem key="1" className={editor?.isActive('heading', { level: 1 }) ? 'bg-default-200' : ''}>
+                  <DropdownItem
+                    key="1"
+                    className={
+                      editor?.isActive("heading", { level: 1 })
+                        ? "bg-default-200"
+                        : ""
+                    }
+                  >
                     Heading 1
                   </DropdownItem>
-                  <DropdownItem key="2" className={editor?.isActive('heading', { level: 2 }) ? 'bg-default-200' : ''}>
+                  <DropdownItem
+                    key="2"
+                    className={
+                      editor?.isActive("heading", { level: 2 })
+                        ? "bg-default-200"
+                        : ""
+                    }
+                  >
                     Heading 2
                   </DropdownItem>
-                  <DropdownItem key="3" className={editor?.isActive('heading', { level: 3 }) ? 'bg-default-200' : ''}>
+                  <DropdownItem
+                    key="3"
+                    className={
+                      editor?.isActive("heading", { level: 3 })
+                        ? "bg-default-200"
+                        : ""
+                    }
+                  >
                     Heading 3
                   </DropdownItem>
                 </DropdownMenu>
@@ -199,7 +238,7 @@ const PostForm: React.FC<PostFormProps> = ({
                 isIconOnly
                 variant="flat"
                 onClick={() => editor?.chain().focus().toggleBold().run()}
-                className={editor?.isActive('bold') ? 'bg-default-200' : ''}
+                className={editor?.isActive("bold") ? "bg-default-200" : ""}
               >
                 <Bold size={16} />
               </Button>
@@ -208,7 +247,7 @@ const PostForm: React.FC<PostFormProps> = ({
                 isIconOnly
                 variant="flat"
                 onClick={() => editor?.chain().focus().toggleItalic().run()}
-                className={editor?.isActive('italic') ? 'bg-default-200' : ''}
+                className={editor?.isActive("italic") ? "bg-default-200" : ""}
               >
                 <Italic size={16} />
               </Button>
@@ -220,7 +259,9 @@ const PostForm: React.FC<PostFormProps> = ({
                 isIconOnly
                 variant="flat"
                 onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                className={editor?.isActive('bulletList') ? 'bg-default-200' : ''}
+                className={
+                  editor?.isActive("bulletList") ? "bg-default-200" : ""
+                }
               >
                 <List size={16} />
               </Button>
@@ -228,8 +269,12 @@ const PostForm: React.FC<PostFormProps> = ({
                 size="sm"
                 isIconOnly
                 variant="flat"
-                onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                className={editor?.isActive('orderedList') ? 'bg-default-200' : ''}
+                onClick={() =>
+                  editor?.chain().focus().toggleOrderedList().run()
+                }
+                className={
+                  editor?.isActive("orderedList") ? "bg-default-200" : ""
+                }
               >
                 <ListOrdered size={16} />
               </Button>
@@ -260,7 +305,6 @@ const PostForm: React.FC<PostFormProps> = ({
               <div className="text-danger text-sm">{errors.content}</div>
             )}
           </div>
-
           <div className="space-y-2">
             <Select
               label="Category"
@@ -277,11 +321,11 @@ const PostForm: React.FC<PostFormProps> = ({
               ))}
             </Select>
           </div>
-
           <div className="space-y-2">
             <Select
               label="Add Tags"
-              selectedKeys={selectedTags.map(tag => tag.id)}>
+              selectedKeys={selectedTags.map((tag) => tag.id)}
+            >
               <SelectSection>
                 {suggestedTags.map((tag) => (
                   <SelectItem
@@ -307,7 +351,6 @@ const PostForm: React.FC<PostFormProps> = ({
               ))}
             </div>
           </div>
-
           <div className="space-y-2">
             <Select
               label="Status"
@@ -317,11 +360,23 @@ const PostForm: React.FC<PostFormProps> = ({
               <SelectItem key={PostStatus.DRAFT} value={PostStatus.DRAFT}>
                 Draft
               </SelectItem>
-              <SelectItem key={PostStatus.PUBLISHED} value={PostStatus.PUBLISHED}>
+              <SelectItem
+                key={PostStatus.PUBLISHED}
+                value={PostStatus.PUBLISHED}
+              >
                 Published
               </SelectItem>
             </Select>
           </div>
+
+          <CreateUpdatePostMapComponent
+            initialLat={lat}
+            initialLng={lng}
+            onLocationSelect={locationSelectHandler}
+          />
+          {errors.location && (
+            <div className="text-danger text-sm">{errors.location}</div>
+          )}
 
           <div className="flex justify-end gap-2 pt-4">
             <Button
@@ -332,12 +387,8 @@ const PostForm: React.FC<PostFormProps> = ({
             >
               Cancel
             </Button>
-            <Button
-              color="primary"
-              type="submit"
-              isLoading={isSubmitting}
-            >
-              {initialPost ? 'Update' : 'Create'} Post
+            <Button color="primary" type="submit" isLoading={isSubmitting}>
+              {initialPost ? "Update" : "Create"} Post
             </Button>
           </div>
         </CardBody>

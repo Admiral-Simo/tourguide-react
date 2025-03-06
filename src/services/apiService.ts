@@ -41,6 +41,8 @@ export interface Post {
   readingTime?: number;
   createdAt: string;
   updatedAt: string;
+  latitude: number; // Latitude of the post location
+  longitude: number; // Longitude of the post location
   status?: PostStatus;
 }
 
@@ -50,6 +52,8 @@ export interface CreatePostRequest {
   categoryId: string;
   tagIds: string[];
   status: PostStatus;
+  latitude: number; // Latitude of the post location
+  longitude: number; // Longitude of the post location
 }
 
 export interface UpdatePostRequest extends CreatePostRequest {

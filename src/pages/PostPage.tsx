@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import DOMPurify from 'dompurify';
+import React, { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
 import {
   Card,
   CardHeader,
@@ -10,26 +10,27 @@ import {
   Button,
   Divider,
   Avatar,
-} from '@nextui-org/react';
-import { 
+} from "@nextui-org/react";
+import {
   Calendar,
   Clock,
   Tag,
   Edit,
   Trash,
   ArrowLeft,
-  Share
-} from 'lucide-react';
-import { apiService, Post } from '../services/apiService';
+  Share,
+} from "lucide-react";
+import { apiService, Post } from "../services/apiService";
+import { ShowPostMapComponent } from "../components/ShowPostMapComponent";
 
 interface PostPageProps {
   isAuthenticated?: boolean;
   currentUserId?: string;
 }
 
-const PostPage: React.FC<PostPageProps> = ({ 
+const PostPage: React.FC<PostPageProps> = ({
   isAuthenticated,
-  currentUserId
+  currentUserId,
 }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -42,12 +43,12 @@ const PostPage: React.FC<PostPageProps> = ({
     const fetchPost = async () => {
       try {
         setLoading(true);
-        if (!id) throw new Error('Post ID is required');
+        if (!id) throw new Error("Post ID is required");
         const fetchedPost = await apiService.getPost(id);
         setPost(fetchedPost);
         setError(null);
       } catch (err) {
-        setError('Failed to load the post. Please try again later.');
+        setError("Failed to load the post. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -57,16 +58,19 @@ const PostPage: React.FC<PostPageProps> = ({
   }, [id]);
 
   const handleDelete = async () => {
-    if (!post || !window.confirm('Are you sure you want to delete this post?')) {
+    if (
+      !post ||
+      !window.confirm("Are you sure you want to delete this post?")
+    ) {
       return;
     }
 
     try {
       setIsDeleting(true);
       await apiService.deletePost(post.id);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError('Failed to delete the post. Please try again later.');
+      setError("Failed to delete the post. Please try again later.");
       setIsDeleting(false);
     }
   };
@@ -75,7 +79,7 @@ const PostPage: React.FC<PostPageProps> = ({
     try {
       await navigator.share({
         title: post?.title,
-        text: post?.content.substring(0, 100) + '...',
+        text: post?.content.substring(0, 100) + "...",
         url: window.location.href,
       });
     } catch (err) {
@@ -85,19 +89,19 @@ const PostPage: React.FC<PostPageProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const createSanitizedHTML = (content: string) => {
     return {
       __html: DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ['p', 'strong', 'em', 'br'],
-        ALLOWED_ATTR: []
-      })
+        ALLOWED_TAGS: ["p", "strong", "em", "br"],
+        ALLOWED_ATTR: [],
+      }),
     };
   };
 
@@ -123,7 +127,7 @@ const PostPage: React.FC<PostPageProps> = ({
       <div className="max-w-4xl mx-auto px-4">
         <Card>
           <CardBody>
-            <p className="text-danger">{error || 'Post not found'}</p>
+            <p className="text-danger">{error || "Post not found"}</p>
             <Button
               as={Link}
               to="/"
@@ -192,10 +196,7 @@ const PostPage: React.FC<PostPageProps> = ({
           <h1 className="text-3xl font-bold">{post.title}</h1>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Avatar
-                name={post.author?.name}
-                size="sm"
-              />
+              <Avatar name={post.author?.name} size="sm" />
               <span className="text-default-600">{post.author?.name}</span>
             </div>
             <div className="flex items-center gap-2 text-default-500">
@@ -212,7 +213,7 @@ const PostPage: React.FC<PostPageProps> = ({
         <Divider />
 
         <CardBody>
-          <div 
+          <div
             className="prose max-w-none"
             dangerouslySetInnerHTML={createSanitizedHTML(post.content)}
           />
@@ -234,6 +235,12 @@ const PostPage: React.FC<PostPageProps> = ({
               </Chip>
             ))}
           </div>
+          <Divider />
+          <ShowPostMapComponent
+            title={post.title}
+            lat={post.latitude}
+            lng={post.longitude}
+          />
         </CardFooter>
       </Card>
     </div>

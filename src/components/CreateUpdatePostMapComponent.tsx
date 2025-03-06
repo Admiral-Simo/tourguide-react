@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MapContainer,
   Marker,
@@ -8,10 +8,31 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-export function MapPage() {
+interface MapComponentProps {
+  onLocationSelect: (lat: number, lng: number) => void;
+  initialLat?: number;
+  initialLng?: number;
+}
+
+export function CreateUpdatePostMapComponent({
+  onLocationSelect,
+  initialLat,
+  initialLng,
+}: MapComponentProps) {
   const [selectedPosition, setSelectedPosition] = useState<
     [number, number] | null
-  >(null);
+  >(
+    initialLat !== undefined && initialLng !== undefined
+      ? [initialLat, initialLng]
+      : null,
+  );
+
+  // Update marker when initialLat and initialLng change
+  useEffect(() => {
+    if (initialLat !== undefined && initialLng !== undefined) {
+      setSelectedPosition([initialLat, initialLng]);
+    }
+  }, [initialLat, initialLng]);
 
   // Custom component to handle map click event
   function MapClickHandler() {
@@ -19,7 +40,7 @@ export function MapPage() {
       click(e) {
         const { lat, lng } = e.latlng;
         setSelectedPosition([lat, lng]);
-        alert("Selected Position:" + lat + lng); // You can save this data in a database or state management
+        onLocationSelect(lat, lng); // Pass coordinates to parent
       },
     });
 
@@ -28,7 +49,7 @@ export function MapPage() {
 
   return (
     <MapContainer
-      center={[31.7917, -7.0926]} // Default center (Morocco)
+      center={selectedPosition || [31.7917, -7.0926]} // Default center (Morocco) or selected position
       zoom={6}
       scrollWheelZoom={false}
       style={{ height: "500px", width: "100%" }}
@@ -49,31 +70,6 @@ export function MapPage() {
             {selectedPosition[1]}
           </Popup>
         </Marker>
-      )}
-
-      {/* Button to "save" the location (example) */}
-      {selectedPosition && (
-        <button
-          onClick={() =>
-            alert(
-              `Location saved: ${selectedPosition[0]}, ${selectedPosition[1]}`,
-            )
-          }
-          style={{
-            position: "absolute",
-            top: "10px",
-            left: "10px",
-            zIndex: 1000,
-            padding: "10px",
-            backgroundColor: "blue",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Save Location
-        </button>
       )}
     </MapContainer>
   );
