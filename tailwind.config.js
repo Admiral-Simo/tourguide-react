@@ -8,9 +8,32 @@ export default {
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // Add ur custom colors here
+      },
+    },
   },
   darkMode: "class",
-  plugins: [nextui()]
+  plugins: [
+    nextui({
+      themes: {
+        dark: {
+          colors: {
+            // customize dark mode colors
+            background: "#12122f",
+            // u can also customize other colors here
+            // primary: "#0072f5",
+          },
+        },
+        light: {
+          // customize light mode colors
+          colors: {
+            // background: "#ffffff",
+          },
+        },
+      },
+    }),
+  ],
 }
 

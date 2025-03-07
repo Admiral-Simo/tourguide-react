@@ -12,6 +12,9 @@ import SignupPage from "./pages/SignupPage";
 import { AuthProvider, useAuth } from "./components/AuthContext";
 import PostsPage from "./pages/PostsPage";
 
+import { NextUIProvider } from "@nextui-org/react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -88,11 +91,16 @@ function AppContent() {
   );
 }
 
+
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <NextThemesProvider defaultTheme="dark" attribute="class">
+      <NextUIProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </NextUIProvider>
+    </NextThemesProvider>
   );
 }
 

@@ -15,7 +15,21 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@nextui-org/react";
-import { Plus, BookOpen, Edit3, LogOut, User, BookDashed } from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  Plus,
+  BookOpen,
+  Edit3,
+  LogOut,
+  User,
+  BookDashed,
+  Sun,
+  Moon,
+  Map,
+  FileText,
+  Tag,
+  Grid,
+} from "lucide-react";
 
 interface NavBarProps {
   isAuthenticated: boolean;
@@ -33,12 +47,18 @@ const NavBar: React.FC<NavBarProps> = ({
 }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
+
+  const toggleTheme = () => {
+    setTheme(isDark ? "light" : "dark");
+  };
 
   const menuItems = [
-    { name: "Home", path: "/" },
-    { name: "Posts", path: "/posts" },
-    { name: "Categories", path: "/categories" },
-    { name: "Tags", path: "/tags" },
+    { name: "Home", path: "/", icon: <Map size={18} /> },
+    { name: "Posts", path: "/posts", icon: <FileText size={18} /> },
+    { name: "Categories", path: "/categories", icon: <Grid size={18} /> },
+    { name: "Tags", path: "/tags", icon: <Tag size={18} /> },
   ];
 
   return (
@@ -46,7 +66,8 @@ const NavBar: React.FC<NavBarProps> = ({
       isBordered
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
-      className="mb-6"
+      className="mb-6 backdrop-blur-md bg-opacity-80 dark:bg-opacity-80"
+      maxWidth="xl"
     >
       <NavbarContent className="sm:hidden" justify="start">
         <NavbarMenuToggle />
@@ -54,7 +75,8 @@ const NavBar: React.FC<NavBarProps> = ({
 
       <NavbarContent className="sm:hidden pr-3" justify="center">
         <NavbarBrand>
-          <Link to="/" className="font-bold text-inherit">
+          <BookOpen size={24} className="text-primary" />
+          <Link to="/" className="font-bold text-inherit ml-2">
             Tour Guide
           </Link>
         </NavbarBrand>
@@ -62,7 +84,8 @@ const NavBar: React.FC<NavBarProps> = ({
 
       <NavbarContent className="hidden sm:flex gap-4" justify="start">
         <NavbarBrand>
-          <Link to="/" className="font-bold text-inherit">
+          <BookOpen size={24} className="text-primary" />
+          <Link to="/" className="font-bold text-inherit ml-2">
             Tour Guide
           </Link>
         </NavbarBrand>
@@ -73,30 +96,71 @@ const NavBar: React.FC<NavBarProps> = ({
           >
             <Link
               to={item.path}
-              className={`text-sm ${
+              className={`text-sm flex items-center gap-1 transition-colors hover:text-primary ${
                 location.pathname === item.path
-                  ? "text-primary"
+                  ? "text-primary font-medium"
                   : "text-default-600"
               }`}
             >
+              {item.icon}
               {item.name}
             </Link>
           </NavbarItem>
         ))}
       </NavbarContent>
 
-      <NavbarContent justify="end">
-        {isAuthenticated ? (
+      <NavbarContent justify="end" className="gap-2">
+        <NavbarItem>
+          <Button
+            isIconOnly
+            variant="light"
+            aria-label="Toggle theme"
+            className="rounded-full"
+            onClick={toggleTheme}
+          >
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          </Button>
+        </NavbarItem>
+
+        {!isAuthenticated ? (
           <>
             <NavbarItem>
+              <Button
+                as={Link}
+                to="/login"
+                variant="flat"
+                color="primary"
+                size="sm"
+                className="font-medium"
+              >
+                Log In
+              </Button>
+            </NavbarItem>
+            <NavbarItem>
+              <Button
+                as={Link}
+                to="/signup"
+                variant="flat"
+                size="sm"
+                className="font-medium"
+              >
+                Sign Up
+              </Button>
+            </NavbarItem>
+          </>
+        ) : (
+          <>
+            <NavbarItem className="hidden sm:flex">
               <Button
                 as={Link}
                 to="/posts/drafts"
                 color="secondary"
                 variant="flat"
                 startContent={<BookDashed size={16} />}
+                className="font-medium"
+                size="sm"
               >
-                Draft Posts
+                Drafts
               </Button>
             </NavbarItem>
             <NavbarItem>
@@ -106,6 +170,8 @@ const NavBar: React.FC<NavBarProps> = ({
                 color="primary"
                 variant="flat"
                 startContent={<Plus size={16} />}
+                className="font-medium"
+                size="sm"
               >
                 New Post
               </Button>
@@ -116,12 +182,17 @@ const NavBar: React.FC<NavBarProps> = ({
                   <Avatar
                     isBordered
                     as="button"
-                    className="transition-transform"
+                    color="primary"
+                    size="sm"
+                    className="transition-transform hover:scale-105"
                     src={userProfile?.avatar}
                     name={userProfile?.name}
                   />
                 </DropdownTrigger>
                 <DropdownMenu aria-label="User menu">
+                  <DropdownItem key="profile" startContent={<User size={16} />}>
+                    <Link to="/profile">My Profile</Link> {/* TODO: Create a ProfilePage? */}
+                  </DropdownItem>
                   <DropdownItem key="drafts" startContent={<Edit3 size={16} />}>
                     <Link to="/posts/drafts">My Drafts</Link>
                   </DropdownItem>
@@ -138,38 +209,38 @@ const NavBar: React.FC<NavBarProps> = ({
               </Dropdown>
             </NavbarItem>
           </>
-        ) : (
-          <>
-            <NavbarItem>
-              <Button as={Link} to="/login" variant="flat">
-                Log In
-              </Button>
-            </NavbarItem>
-            <NavbarItem>
-              <Button as={Link} to="/signup" variant="faded">
-                Sign Up
-              </Button>
-            </NavbarItem>
-          </>
         )}
       </NavbarContent>
 
-      <NavbarMenu>
+      <NavbarMenu className="pt-6">
         {menuItems.map((item) => (
           <NavbarMenuItem key={item.path}>
             <Link
               to={item.path}
-              className={`w-full ${
+              className={`w-full flex items-center gap-2 py-2 ${
                 location.pathname === item.path
-                  ? "text-primary"
+                  ? "text-primary font-medium"
                   : "text-default-600"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
+              {item.icon}
               {item.name}
             </Link>
           </NavbarMenuItem>
         ))}
+        {isAuthenticated && (
+          <NavbarMenuItem>
+            <Link
+              to="/posts/drafts"
+              className="w-full flex items-center gap-2 py-2 text-default-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <BookDashed size={18} />
+              My Drafts
+            </Link>
+          </NavbarMenuItem>
+        )}
       </NavbarMenu>
     </Navbar>
   );
