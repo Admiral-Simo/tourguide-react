@@ -145,6 +145,11 @@ const NavBar: React.FC<NavBarProps> = ({
                 Log In
               </Button>
             </NavbarItem>
+            <NavbarItem>
+              <Button as={Link} to="/signup" variant="faded">
+                Sign Up
+              </Button>
+            </NavbarItem>
           </>
         )}
       </NavbarContent>

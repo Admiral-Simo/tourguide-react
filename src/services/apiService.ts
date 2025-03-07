@@ -11,6 +11,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SignupRequest {
+  email: string;
+  password: string;
+  name: string;
+}
+
 export interface AuthResponse {
   token: string;
   expiresIn: number;
@@ -140,6 +146,11 @@ class ApiService {
           window.location.href = "/"; // Adjust based on your routing
         }
       });
+    return response.data;
+  }
+
+  public async signup(signupData: SignupRequest): Promise<AuthResponse> {
+    const response: AxiosResponse<AuthResponse> = await this.api.post("/auth/signup", signupData);
     return response.data;
   }
 
