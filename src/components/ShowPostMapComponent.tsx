@@ -24,12 +24,15 @@ export function ShowPostMapComponent({
     <MapContainer
       center={[31.7917, -7.0926]} // Default center (Morocco)
       zoom={6}
-      scrollWheelZoom={false}
       style={{ height: `${pixelHeight}px`, width: "100%" }}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      />
+      <TileLayer
+        attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
+        url="http://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}"
       />
 
       {posts.map(({ id, lat, lng, title }) => (
