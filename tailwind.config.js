@@ -21,7 +21,7 @@ export default {
         dark: {
           colors: {
             // customize dark mode colors
-            background: "#12122f",
+            background: "#121224",
             // u can also customize other colors here
             // primary: "#0072f5",
           },

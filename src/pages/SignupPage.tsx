@@ -2,6 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { useAuth } from '../components/AuthContext';
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Input,
+  Button,
+  Divider,
+} from "@nextui-org/react";
+import { Mail, Lock, Eye, EyeOff, User, Compass, AlertCircle, LogIn } from 'lucide-react'; 
+
 
 const SignupPage = () => {
   const [email, setEmail] = useState('');
@@ -9,8 +20,12 @@ const SignupPage = () => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const toggleVisibility = () => setIsVisible(!isVisible);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +34,8 @@ const SignupPage = () => {
 
     try {
       // Call the signup API endpoint
-      const signupResponse = await apiService.signup({ email, password, name });
-
+      await apiService.signup({ email, password, name }); // Pass name in signup request
+      
       // After successful signup, automatically log the user in
       await login(email, password); // Use email and password again 4 login after signup
       navigate('/');
@@ -32,95 +47,119 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-              sign in to your existing account
-            </Link>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="name" className="sr-only">
-                Your Name
-              </label>
-              <input
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4 bg-gradient-to-b from-background to-background/80">
+      <div className="w-full max-w-md">
+        <Card className="shadow-lg">
+          <CardHeader className="flex-col gap-2 items-center justify-center pt-8 pb-0">
+            <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full">
+              <Compass size={24} className="text-primary" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold">Create Account</h2>
+              <p className="text-sm text-default-500">Sign up to join Tour Guide</p>
+            </div>
+          </CardHeader>
+
+          <CardBody className="px-8 py-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <Input
                 id="name"
-                name="name"
                 type="text"
-                required
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Your Name"
+                label="Your Name"
+                labelPlacement="outside"
+                placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                isRequired
+                startContent={<User size={16} className="text-default-400" />}
+                variant="bordered"
+                classNames={{
+                  input: "text-small",
+                  inputWrapper: "h-12",
+                }}
                 disabled={isLoading}
               />
-            </div>
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
+              <Input
                 id="email"
-                name="email"
                 type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                label="Email"
+                labelPlacement="outside"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                isRequired
+                startContent={<Mail size={16} className="text-default-400" />}
+                variant="bordered"
+                classNames={{
+                  input: "text-small",
+                  inputWrapper: "h-12",
+                }}
                 disabled={isLoading}
               />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
+
+              <Input
                 id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                label="Password"
+                labelPlacement="outside"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                isRequired
+                startContent={<Lock size={16} className="text-default-400" />}
+                endContent={
+                  <button type="button" onClick={toggleVisibility} className="focus:outline-none">
+                    {isVisible ? (
+                      <EyeOff size={16} className="text-default-400" />
+                    ) : (
+                      <Eye size={16} className="text-default-400" />
+                    )}
+                  </button>
+                }
+                type={isVisible ? "text" : "password"}
+                variant="bordered"
+                classNames={{
+                  input: "text-small",
+                  inputWrapper: "h-12",
+                }}
                 disabled={isLoading}
               />
-            </div>
-          </div>
 
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{error}</h3>
+              {error && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-danger-50 text-danger text-sm">
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Signing up...' : 'Sign up'}
-            </button>
-          </div>
-        </form>
+              <Button
+                type="submit"
+                color="primary"
+                size="lg"
+                className="w-full font-medium"
+                startContent={<LogIn size={18} />}
+                isLoading={isLoading}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Signing up...' : 'Sign up'}
+              </Button>
+            </form>
+          </CardBody>
+
+          <Divider />
+
+          <CardFooter className="flex-col items-center gap-2 px-8 py-5">
+            <p className="text-sm text-default-500">
+              Already have an account?{' '}
+              <Link to="/login" className="text-primary font-medium hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
 };
+
 
 export default SignupPage;
