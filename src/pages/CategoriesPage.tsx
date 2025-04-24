@@ -62,7 +62,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
       if (editingCategory) {
         await apiService.updateCategory(
           editingCategory.id,
-          newCategoryName.trim()
+          newCategoryName.trim(),
         );
       } else {
         await apiService.createCategory(newCategoryName.trim());
@@ -73,7 +73,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
       setError(
         `Failed to ${
           editingCategory ? "update" : "create"
-        } category. Please try again.`
+        } category. Please try again.`,
       );
     } finally {
       setIsSubmitting(false);
@@ -83,7 +83,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
   const handleDelete = async (category: Category) => {
     if (
       !window.confirm(
-        `Are you sure you want to delete the category "${category.name}"?`
+        `Are you sure you want to delete the category "${category.name}"?`,
       )
     ) {
       return;
@@ -119,7 +119,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-6xl mx-auto px-4 mt-5">
       <Card>
         <CardHeader className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Categories</h1>

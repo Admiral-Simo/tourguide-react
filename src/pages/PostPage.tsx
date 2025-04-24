@@ -132,7 +132,7 @@ const PostPage: React.FC<PostPageProps> = ({
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto px-4 mt-5">
         <Card className="w-full animate-pulse">
           <CardBody>
             <div className="h-8 bg-default-200 rounded w-3/4 mb-4"></div>
@@ -149,7 +149,7 @@ const PostPage: React.FC<PostPageProps> = ({
 
   if (error || !post) {
     return (
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto px-4 mt-5">
         <Card>
           <CardBody>
             <p className="text-danger">{error || "Post not found"}</p>
@@ -170,19 +170,21 @@ const PostPage: React.FC<PostPageProps> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
-      <Card className="w-full">
-        <CardHeader className="flex flex-col items-start gap-3">
-          <div className="flex justify-between w-full">
+    <div className="max-w-6xl mx-auto px-4 mt-10">
+      <Card className="w-full shadow-lg rounded-xl border border-default-200">
+        <CardHeader className="flex flex-col gap-4 p-6">
+          {/* Top Bar: Back + Actions */}
+          <div className="flex justify-between items-center w-full">
             <Button
               as={Link}
               to="/"
-              variant="flat"
+              variant="light"
               startContent={<ArrowLeft size={16} />}
               size="sm"
             >
               Back to Posts
             </Button>
+
             <div className="flex gap-2">
               {isAuthenticated && (
                 <>
@@ -190,7 +192,7 @@ const PostPage: React.FC<PostPageProps> = ({
                     as={Link}
                     to={`/posts/${post.id}/edit`}
                     color="primary"
-                    variant="flat"
+                    variant="solid"
                     startContent={<Edit size={16} />}
                     size="sm"
                   >
@@ -198,7 +200,7 @@ const PostPage: React.FC<PostPageProps> = ({
                   </Button>
                   <Button
                     color="danger"
-                    variant="flat"
+                    variant="solid"
                     startContent={<Trash size={16} />}
                     onClick={handleDelete}
                     isLoading={isDeleting}
@@ -209,7 +211,7 @@ const PostPage: React.FC<PostPageProps> = ({
                 </>
               )}
               <Button
-                variant="flat"
+                variant="ghost"
                 startContent={<Share size={16} />}
                 onClick={handleShare}
                 size="sm"
@@ -218,17 +220,25 @@ const PostPage: React.FC<PostPageProps> = ({
               </Button>
             </div>
           </div>
-          <h1 className="text-5xl font-bold uppercase">{post.title}</h1>
-          <div className="flex items-center gap-4">
+
+          {/* Title */}
+          <h1 className="text-4xl sm:text-5xl font-extrabold uppercase leading-tight tracking-tight">
+            {post.title}
+          </h1>
+
+          {/* Meta Info */}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-default-500">
             <div className="flex items-center gap-2">
               <Avatar name={post.author?.name} size="sm" />
-              <span className="text-default-600">{post.author?.name}</span>
+              <span className="text-default-600 font-medium">
+                {post.author?.name}
+              </span>
             </div>
-            <div className="flex items-center gap-2 text-default-500">
+            <div className="flex items-center gap-2">
               <Calendar size={16} />
               <span>{formatDate(post.createdAt)}</span>
             </div>
-            <div className="flex items-center gap-2 text-default-500">
+            <div className="flex items-center gap-2">
               <Clock size={16} />
               <span>{post.readingTime} min read</span>
             </div>
@@ -237,34 +247,42 @@ const PostPage: React.FC<PostPageProps> = ({
 
         <Divider />
 
-        <CardBody>
+        <CardBody className="p-6">
           <div
             className="prose max-w-none custom-content"
             dangerouslySetInnerHTML={createSanitizedHTML(post.content)}
           />
         </CardBody>
 
-        <CardFooter className="flex flex-col items-start gap-4">
-          <Divider />
+        <Divider />
+
+        <CardFooter className="flex flex-col gap-6 p-6">
+          {/* Tags & Category */}
           <div className="flex flex-wrap gap-2">
-            <Chip color="primary" variant="flat">
+            <Chip color="primary" variant="solid">
               {post.category.name}
             </Chip>
             {post.tags.map((tag) => (
               <Chip
                 key={tag.id}
                 variant="flat"
+                className="bg-default-100"
                 startContent={<Tag size={14} />}
               >
                 {tag.name}
               </Chip>
             ))}
           </div>
-          <Divider />
+
+          {/* Map */}
           <ShowPostMapComponent
             pixelHeight={500}
             posts={[
-              { title: post.title, lat: post.latitude, lng: post.longitude },
+              {
+                title: post.title,
+                lat: post.latitude,
+                lng: post.longitude,
+              },
             ]}
           />
         </CardFooter>

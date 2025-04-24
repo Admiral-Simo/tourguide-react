@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardBody, CardHeader, Button, Divider } from "@nextui-org/react";
+import { ArrowLeft } from "lucide-react";
 import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-} from '@nextui-org/react';
-import { ArrowLeft } from 'lucide-react';
-import { apiService, Post, Category, Tag, PostStatus } from '../services/apiService';
-import PostForm from '../components/PostForm';
+  apiService,
+  Post,
+  Category,
+  Tag,
+  PostStatus,
+} from "../services/apiService";
+import PostForm from "../components/PostForm";
 
 const EditPostPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,7 +27,7 @@ const EditPostPage: React.FC = () => {
         setLoading(true);
         const [categoriesResponse, tagsResponse] = await Promise.all([
           apiService.getCategories(),
-          apiService.getTags()
+          apiService.getTags(),
         ]);
 
         setCategories(categoriesResponse);
@@ -39,7 +40,7 @@ const EditPostPage: React.FC = () => {
 
         setError(null);
       } catch (err) {
-        setError('Failed to load necessary data. Please try again later.');
+        setError("Failed to load necessary data. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -62,15 +63,15 @@ const EditPostPage: React.FC = () => {
       if (id) {
         await apiService.updatePost(id, {
           ...postData,
-          id
+          id,
         });
       } else {
         await apiService.createPost(postData);
       }
 
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError('Failed to save the post. Please try again.');
+      setError("Failed to save the post. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -79,7 +80,7 @@ const EditPostPage: React.FC = () => {
     if (id) {
       navigate(`/posts/${id}`);
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
 
@@ -101,26 +102,30 @@ const EditPostPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
-      <Card className="w-full">
-        <CardHeader className="flex justify-between items-center">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+      <Card className="w-full backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 border border-default-200 rounded-2xl shadow-lg hover:shadow-2xl transition-shadow">
+        <CardHeader className="flex justify-between items-center p-6">
           <div className="flex items-center gap-4">
             <Button
-              variant="flat"
+              variant="light"
               startContent={<ArrowLeft size={16} />}
               onClick={handleCancel}
+              size="sm"
+              className="hover:scale-105 transition-transform"
             >
               Back
             </Button>
-            <h1 className="text-2xl font-bold">
-              {id ? 'Edit Post' : 'Create New Post'}
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+              {id ? "Edit Post" : "Create New Post"}
             </h1>
           </div>
         </CardHeader>
 
-        <CardBody>
+        <Divider />
+
+        <CardBody className="p-6">
           {error && (
-            <div className="mb-4 p-4 text-red-500 bg-red-50 rounded-lg">
+            <div className="mb-6 p-4 text-sm text-red-600 bg-red-100 border border-red-300 rounded-lg">
               {error}
             </div>
           )}

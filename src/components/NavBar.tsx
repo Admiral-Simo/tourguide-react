@@ -66,7 +66,8 @@ const NavBar: React.FC<NavBarProps> = ({
       isBordered
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
-      className="mb-6 backdrop-blur-md bg-opacity-80 dark:bg-opacity-80"
+      className="backdrop-blur-md bg-opacity-80 dark:bg-opacity-80"
+      style={{ height: "8vh" }}
       maxWidth="xl"
     >
       <NavbarContent className="sm:hidden" justify="start">

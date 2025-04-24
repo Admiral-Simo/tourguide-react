@@ -14,17 +14,14 @@ interface MapComponentProps {
   pixelHeight: number;
 }
 
-export function ShowPostMapComponent({
-  posts,
-  pixelHeight,
-}: MapComponentProps) {
+export function ShowPostMapComponent({ posts }: MapComponentProps) {
   const navigate = useNavigate(); // Initialize navigation function
 
   return (
     <MapContainer
       center={[31.7917, -7.0926]} // Default center (Morocco)
       zoom={6}
-      style={{ height: `${pixelHeight}px`, width: "100%" }}
+      style={{ height: "92vh", width: "100%" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.esri.com/">Esri</a>'

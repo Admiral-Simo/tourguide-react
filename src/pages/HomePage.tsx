@@ -49,7 +49,6 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1 className="font-bold text-3xl mb-3">Global Mapping For Articles:</h1>
       <ShowPostMapComponent pixelHeight={700} posts={posts} />
     </div>
   );

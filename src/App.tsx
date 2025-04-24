@@ -43,7 +43,7 @@ function AppContent() {
         }
         onLogout={logout}
       />
-      <main className="container mx-auto py-6">
+      <main>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/posts" element={<PostsPage />} />
@@ -90,7 +90,6 @@ function AppContent() {
     </BrowserRouter>
   );
 }
-
 
 function App() {
   return (

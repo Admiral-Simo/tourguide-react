@@ -112,7 +112,7 @@ const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-6xl mx-auto px-4 mt-5">
       <Card>
         <CardHeader className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Tags</h1>

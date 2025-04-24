@@ -54,7 +54,7 @@ const PostsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 space-y-6 mt-5">
       <Card className="mb-6 px-2">
         <CardHeader>
           <h1 className="text-2xl font-bold">Blog Posts</h1>
