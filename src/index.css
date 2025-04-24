@@ -1,0 +1,19 @@
+/* your styles.css or global.css */
+.custom-content h1 {
+  @apply text-3xl font-bold mb-4;
+}
+.custom-content h2 {
+  @apply text-2xl font-semibold mb-3;
+}
+.custom-content h3 {
+  @apply text-xl font-medium mb-2;
+}
+.custom-content ul {
+  @apply list-disc pl-5 mb-2;
+}
+.custom-content ol {
+  @apply list-decimal pl-5 mb-2;
+}
+.custom-content li {
+  @apply mb-1;
+}

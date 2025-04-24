@@ -97,11 +97,36 @@ const PostPage: React.FC<PostPageProps> = ({
   };
 
   const createSanitizedHTML = (content: string) => {
+    const sanitized = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: [
+        "p",
+        "strong",
+        "em",
+        "br",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "ul",
+        "ol",
+        "li",
+        "a",
+        "pre",
+        "code",
+        "blockquote",
+        "img",
+        "hr",
+      ],
+      ALLOWED_ATTR: ["href", "target", "rel", "class", "src", "alt"],
+      // OPTIONAL: Add these for safe external links
+      ADD_ATTR: ["target", "rel"],
+      FORBID_TAGS: ["style", "script"], // extra safety
+    });
+
+    console.log(sanitized); // Check what's actually rendered
+
     return {
-      __html: DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ["p", "strong", "em", "br"],
-        ALLOWED_ATTR: [],
-      }),
+      __html: sanitized,
     };
   };
 
@@ -193,7 +218,7 @@ const PostPage: React.FC<PostPageProps> = ({
               </Button>
             </div>
           </div>
-          <h1 className="text-3xl font-bold">{post.title}</h1>
+          <h1 className="text-5xl font-bold uppercase">{post.title}</h1>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Avatar name={post.author?.name} size="sm" />
@@ -214,7 +239,7 @@ const PostPage: React.FC<PostPageProps> = ({
 
         <CardBody>
           <div
-            className="prose max-w-none"
+            className="prose max-w-none custom-content"
             dangerouslySetInnerHTML={createSanitizedHTML(post.content)}
           />
         </CardBody>
