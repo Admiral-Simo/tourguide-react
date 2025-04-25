@@ -1,6 +1,7 @@
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "leaflet/dist/leaflet.css";
+import { useTheme } from "next-themes";
 
 interface PostInfo {
   id?: number; // ID is now optional
@@ -15,6 +16,7 @@ interface MapComponentProps {
 }
 
 export function ShowPostMapComponent({ posts }: MapComponentProps) {
+  const { theme } = useTheme();
   const navigate = useNavigate(); // Initialize navigation function
 
   return (
@@ -27,10 +29,18 @@ export function ShowPostMapComponent({ posts }: MapComponentProps) {
         attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
       />
-      <TileLayer
-        attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
-        url="http://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}"
-      />
+
+      {theme == "dark" ? (
+        <TileLayer
+          attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
+          url="http://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}"
+        />
+      ) : (
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+      )}
 
       {posts.map(({ id, lat, lng, title }) => (
         <Marker

@@ -7,6 +7,7 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useTheme } from "next-themes";
 
 interface MapComponentProps {
   onLocationSelect: (lat: number, lng: number) => void;
@@ -19,6 +20,7 @@ export function CreateUpdatePostMapComponent({
   initialLat,
   initialLng,
 }: MapComponentProps) {
+  const { theme } = useTheme();
   const [selectedPosition, setSelectedPosition] = useState<
     [number, number] | null
   >(
@@ -57,10 +59,17 @@ export function CreateUpdatePostMapComponent({
         attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
       />
-      <TileLayer
-        attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
-        url="http://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}"
-      />
+      {theme == "dark" ? (
+        <TileLayer
+          attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
+          url="http://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}"
+        />
+      ) : (
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+      )}
 
       {/* Component to handle click events */}
       <MapClickHandler />

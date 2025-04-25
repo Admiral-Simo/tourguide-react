@@ -1,14 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  Card, 
-  CardHeader,
-  CardBody,
-  Button,
-} from '@nextui-org/react';
-import { Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { apiService, Post } from '../services/apiService';
-import PostList from '../components/PostList';
+import React, { useEffect, useState } from "react";
+import { Card, CardHeader, CardBody, Button } from "@nextui-org/react";
+import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { apiService, Post } from "../services/apiService";
+import PostList from "../components/PostList";
 
 const DraftsPage: React.FC = () => {
   const [drafts, setDrafts] = useState<Post[] | null>(null);
@@ -29,7 +24,7 @@ const DraftsPage: React.FC = () => {
         setDrafts(response);
         setError(null);
       } catch (err) {
-        setError('Failed to load drafts. Please try again later.');
+        setError("Failed to load drafts. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -39,7 +34,7 @@ const DraftsPage: React.FC = () => {
   }, [page, sortBy]);
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
+    <div className="max-w-4xl mx-auto px-4 mt-5">
       <Card>
         <CardHeader className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">My Drafts</h1>

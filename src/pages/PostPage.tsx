@@ -169,6 +169,8 @@ const PostPage: React.FC<PostPageProps> = ({
     );
   }
 
+  console.log("author is ", post.author?.id, " current id is ", currentUserId);
+
   return (
     <div className="max-w-6xl mx-auto px-4 mt-10">
       <Card className="w-full shadow-lg rounded-xl border border-default-200">
@@ -188,26 +190,30 @@ const PostPage: React.FC<PostPageProps> = ({
             <div className="flex gap-2">
               {isAuthenticated && (
                 <>
-                  <Button
-                    as={Link}
-                    to={`/posts/${post.id}/edit`}
-                    color="primary"
-                    variant="solid"
-                    startContent={<Edit size={16} />}
-                    size="sm"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    color="danger"
-                    variant="solid"
-                    startContent={<Trash size={16} />}
-                    onClick={handleDelete}
-                    isLoading={isDeleting}
-                    size="sm"
-                  >
-                    Delete
-                  </Button>
+                  {post.author?.id == currentUserId && (
+                    <>
+                      <Button
+                        as={Link}
+                        to={`/posts/${post.id}/edit`}
+                        color="primary"
+                        variant="solid"
+                        startContent={<Edit size={16} />}
+                        size="sm"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        color="danger"
+                        variant="solid"
+                        startContent={<Trash size={16} />}
+                        onClick={handleDelete}
+                        isLoading={isDeleting}
+                        size="sm"
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
               <Button
