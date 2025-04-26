@@ -5,6 +5,13 @@ import axios, {
   AxiosError,
 } from "axios";
 
+export interface UserProfile {
+  id: string; // UUID as string
+  email: string;
+  name: string;
+  createdAt: string; // LocalDateTime as ISO8601 string
+}
+
 // Types
 export interface LoginRequest {
   email: string;
@@ -135,9 +142,15 @@ class ApiService {
       message: "An unexpected error occurred",
     };
   }
+
   // Tags endpoints
   public async getUserId(): Promise<string> {
     const response: AxiosResponse<string> = await this.api.get("/auth/user_id");
+    return response.data;
+  }
+
+  public async me(): Promise<UserProfile> {
+    const response: AxiosResponse<UserProfile> = await this.api.get("/auth/me");
     return response.data;
   }
 
