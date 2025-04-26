@@ -135,6 +135,11 @@ class ApiService {
       message: "An unexpected error occurred",
     };
   }
+  // Tags endpoints
+  public async getUserId(): Promise<string> {
+    const response: AxiosResponse<string> = await this.api.get("/auth/user_id");
+    return response.data;
+  }
 
   // Auth endpoints
   public async login(credentials: LoginRequest): Promise<AuthResponse> {
@@ -150,7 +155,10 @@ class ApiService {
   }
 
   public async signup(signupData: SignupRequest): Promise<AuthResponse> {
-    const response: AxiosResponse<AuthResponse> = await this.api.post("/auth/signup", signupData);
+    const response: AxiosResponse<AuthResponse> = await this.api.post(
+      "/auth/signup",
+      signupData,
+    );
     return response.data;
   }
 

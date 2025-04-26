@@ -28,16 +28,22 @@ interface PostPageProps {
   currentUserId?: string;
 }
 
-const PostPage: React.FC<PostPageProps> = ({
-  isAuthenticated,
-  currentUserId,
-}) => {
+const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [post, setPost] = useState<Post | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await apiService.getUserId();
+      setUserId(id);
+    };
+    fetchUserId();
+  }, []);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -132,7 +138,7 @@ const PostPage: React.FC<PostPageProps> = ({
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 mt-5">
+      <div className="max-w-4xl mx-auto px-4 my-5">
         <Card className="w-full animate-pulse">
           <CardBody>
             <div className="h-8 bg-default-200 rounded w-3/4 mb-4"></div>
@@ -169,7 +175,7 @@ const PostPage: React.FC<PostPageProps> = ({
     );
   }
 
-  console.log("author is ", post.author?.id, " current id is ", currentUserId);
+  console.log("author is ", post.author?.id, " current id is ", userId);
 
   return (
     <div className="max-w-6xl mx-auto px-4 mt-10">
@@ -190,7 +196,7 @@ const PostPage: React.FC<PostPageProps> = ({
             <div className="flex gap-2">
               {isAuthenticated && (
                 <>
-                  {post.author?.id == currentUserId && (
+                  {post.author?.id == userId && (
                     <>
                       <Button
                         as={Link}
