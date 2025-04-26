@@ -14,6 +14,7 @@ import PostsPage from "./pages/PostsPage";
 
 import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import ProfilePage from "./pages/ProfilePage";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -76,6 +77,10 @@ function AppContent() {
           <Route
             path="/tags"
             element={<TagsPage isAuthenticated={isAuthenticated} />}
+          />
+          <Route
+            path="/profile"
+            element={<ProfilePage isAuthenticated={isAuthenticated} />}
           />
           <Route
             path="/posts/drafts"

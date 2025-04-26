@@ -192,7 +192,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 </DropdownTrigger>
                 <DropdownMenu aria-label="User menu">
                   <DropdownItem key="profile" startContent={<User size={16} />}>
-                    <Link to="/profile">My Profile</Link>{" "}
+                    <Link to="/profile">My Profile</Link>
                     {/* TODO: Create a ProfilePage? */}
                   </DropdownItem>
                   <DropdownItem key="drafts" startContent={<Edit3 size={16} />}>
