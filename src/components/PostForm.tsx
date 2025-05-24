@@ -39,9 +39,13 @@ import {
   Eye,
   Save,
   Type,
+  Sparkles,
+  Palette,
 } from "lucide-react";
 import { Post, Category, Tag, PostStatus } from "../services/apiService";
 import { CreateUpdatePostMapComponent } from "./CreateUpdatePostMapComponent";
+import AIContentGenerator from "./AIContentGenerator";
+import AIContentStyling from "./AIContentStyling";
 
 interface PostFormProps {
   initialPost?: Post | null;
@@ -80,6 +84,10 @@ const PostForm: React.FC<PostFormProps> = ({
   const [currentTab, setCurrentTab] = useState("content");
   const [lat, setLat] = useState<number | undefined>(initialPost?.latitude);
   const [lng, setLng] = useState<number | undefined>(initialPost?.longitude);
+  
+  // AI modal states
+  const [isAIGeneratorOpen, setIsAIGeneratorOpen] = useState(false);
+  const [isAIStylingOpen, setIsAIStylingOpen] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -175,6 +183,27 @@ const PostForm: React.FC<PostFormProps> = ({
 
   const handleHeadingSelect = (level: number) => {
     editor?.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run();
+  };
+
+  // AI callback functions
+  const handleAIContentGenerated = (content: string) => {
+    if (editor) {
+      // If editor is empty, replace content, otherwise append
+      const currentContent = editor.getHTML();
+      if (!currentContent || currentContent === "<p></p>") {
+        editor.commands.setContent(content);
+      } else {
+        editor.commands.insertContent("<br><br>" + content);
+      }
+    }
+    setIsAIGeneratorOpen(false);
+  };
+
+  const handleAIContentImproved = (improvedContent: string) => {
+    if (editor) {
+      editor.commands.setContent(improvedContent);
+    }
+    setIsAIStylingOpen(false);
   };
 
   const suggestedTags = availableTags
@@ -373,6 +402,44 @@ const PostForm: React.FC<PostFormProps> = ({
                           isDisabled={!editor?.can().redo()}
                         >
                           <Redo size={14} />
+                        </Button>
+                      </div>
+                    </CardBody>
+                  </Card>
+                  
+                  {/* AI Content Tools */}
+                  <Card className="border border-primary-200 bg-gradient-to-r from-primary-50 to-secondary-50 shadow-sm">
+                    <CardBody className="p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium text-foreground">AI Writing Assistant</span>
+                        </div>
+                        <div className="text-xs text-default-500">
+                          Powered by Gemini AI
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant="flat"
+                          color="primary"
+                          startContent={<Sparkles size={14} />}
+                          onClick={() => setIsAIGeneratorOpen(true)}
+                          className="bg-primary-100 hover:bg-primary-200"
+                        >
+                          Generate Content
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="flat"
+                          color="secondary"
+                          startContent={<Palette size={14} />}
+                          onClick={() => setIsAIStylingOpen(true)}
+                          isDisabled={!editor?.getHTML() || editor?.getHTML() === "<p></p>"}
+                          className="bg-secondary-100 hover:bg-secondary-200"
+                        >
+                          Improve Style
                         </Button>
                       </div>
                     </CardBody>
@@ -633,6 +700,22 @@ const PostForm: React.FC<PostFormProps> = ({
           </div>
         </CardBody>
       </Card>
+      
+      {/* AI Content Generator Modal */}
+      <AIContentGenerator
+        isOpen={isAIGeneratorOpen}
+        onClose={() => setIsAIGeneratorOpen(false)}
+        onContentGenerated={handleAIContentGenerated}
+        currentTitle={title}
+      />
+      
+      {/* AI Content Styling Modal */}
+      <AIContentStyling
+        isOpen={isAIStylingOpen}
+        onClose={() => setIsAIStylingOpen(false)}
+        content={editor?.getHTML() || ""}
+        onContentImproved={handleAIContentImproved}
+      />
     </form>
   );
 };
