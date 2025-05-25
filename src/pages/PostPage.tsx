@@ -31,12 +31,14 @@ interface PostPageProps {
 const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [post, setPost] = useState<Post | undefined>(undefined);
+
+  const [post, setPost] = useState<Post>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [userId, setUserId] = useState("");
 
+  // Fetch current user ID
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await apiService.getUserId();
@@ -45,37 +47,35 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
     fetchUserId();
   }, []);
 
+  // Fetch post by ID
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
         if (!id) throw new Error("Post ID is required");
+
         const fetchedPost = await apiService.getPost(id);
         setPost(fetchedPost);
         setError(null);
-      } catch (err) {
+      } catch {
         setError("Failed to load the post. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchPost();
   }, [id]);
 
+  // Handlers
   const handleDelete = async () => {
-    if (
-      !post ||
-      !window.confirm("Are you sure you want to delete this post?")
-    ) {
+    if (!post || !window.confirm("Are you sure you want to delete this post?"))
       return;
-    }
 
     try {
       setIsDeleting(true);
       await apiService.deletePost(post.id);
       navigate("/");
-    } catch (err) {
+    } catch {
       setError("Failed to delete the post. Please try again later.");
       setIsDeleting(false);
     }
@@ -88,22 +88,21 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
         text: post?.content.substring(0, 100) + "...",
         url: window.location.href,
       });
-    } catch (err) {
-      // Fallback to copying URL
+    } catch {
       navigator.clipboard.writeText(window.location.href);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  // Helpers
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
 
-  const createSanitizedHTML = (content: string) => {
-    const sanitized = DOMPurify.sanitize(content, {
+  const createSanitizedHTML = (content: string) => ({
+    __html: DOMPurify.sanitize(content, {
       ALLOWED_TAGS: [
         "p",
         "strong",
@@ -124,22 +123,16 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
         "hr",
       ],
       ALLOWED_ATTR: ["href", "target", "rel", "class", "src", "alt"],
-      // OPTIONAL: Add these for safe external links
       ADD_ATTR: ["target", "rel"],
-      FORBID_TAGS: ["style", "script"], // extra safety
-    });
+      FORBID_TAGS: ["style", "script"],
+    }),
+  });
 
-    console.log(sanitized); // Check what's actually rendered
-
-    return {
-      __html: sanitized,
-    };
-  };
-
+  // Loading State
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 my-5">
-        <Card className="w-full animate-pulse">
+        <Card className="animate-pulse w-full">
           <CardBody>
             <div className="h-8 bg-default-200 rounded w-3/4 mb-4"></div>
             <div className="space-y-3">
@@ -153,6 +146,7 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
     );
   }
 
+  // Error or Missing Post
   if (error || !post) {
     return (
       <div className="max-w-4xl mx-auto px-4 mt-5">
@@ -175,13 +169,12 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
     );
   }
 
-  console.log("author is ", post.author?.id, " current id is ", userId);
-
+  // Main Post UI
   return (
     <div className="max-w-6xl mx-auto px-4 mt-10">
-      <Card className="w-full shadow-lg rounded-xl border border-default-200">
+      <Card className="shadow-lg rounded-xl border border-default-200 w-full">
+        {/* Header */}
         <CardHeader className="flex flex-col gap-4 p-6">
-          {/* Top Bar: Back + Actions */}
           <div className="flex justify-between items-center w-full">
             <Button
               as={Link}
@@ -194,32 +187,26 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
             </Button>
 
             <div className="flex gap-2">
-              {isAuthenticated && (
+              {isAuthenticated && post.author?.id === userId && (
                 <>
-                  {post.author?.id == userId && (
-                    <>
-                      <Button
-                        as={Link}
-                        to={`/posts/${post.id}/edit`}
-                        color="primary"
-                        variant="solid"
-                        startContent={<Edit size={16} />}
-                        size="sm"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        color="danger"
-                        variant="solid"
-                        startContent={<Trash size={16} />}
-                        onClick={handleDelete}
-                        isLoading={isDeleting}
-                        size="sm"
-                      >
-                        Delete
-                      </Button>
-                    </>
-                  )}
+                  <Button
+                    as={Link}
+                    to={`/posts/${post.id}/edit`}
+                    color="primary"
+                    startContent={<Edit size={16} />}
+                    size="sm"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    color="danger"
+                    startContent={<Trash size={16} />}
+                    onClick={handleDelete}
+                    isLoading={isDeleting}
+                    size="sm"
+                  >
+                    Delete
+                  </Button>
                 </>
               )}
               <Button
@@ -242,7 +229,7 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
           <div className="flex flex-wrap items-center gap-4 text-sm text-default-500">
             <div className="flex items-center gap-2">
               <Avatar name={post.author?.name} size="sm" />
-              <span className="text-default-600 font-medium">
+              <span className="font-medium text-default-600">
                 {post.author?.name}
               </span>
             </div>
@@ -259,21 +246,32 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
 
         <Divider />
 
-        <CardBody className="p-6">
-          <div
-            className="prose max-w-none custom-content"
+        {/* Content */}
+
+        {/* Content */}
+        <CardBody className="px-6 py-10 bg-gradient-to-b from-white via-default-50 to-default-100 dark:from-black dark:via-neutral-900 dark:to-neutral-800 rounded-b-xl custom-content">
+          <article
+            className="prose prose-lg max-w-none leading-relaxed tracking-wide
+      prose-headings:text-primary
+      prose-a:text-blue-600 hover:prose-a:underline
+      prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/10 prose-blockquote:px-4 prose-blockquote:py-2
+      prose-code:bg-default-200 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+      prose-img:rounded-lg
+      prose-hr:border-default-300
+      dark:prose-invert dark:prose-a:text-blue-400 dark:prose-blockquote:bg-primary/20"
             dangerouslySetInnerHTML={createSanitizedHTML(post.content)}
           />
         </CardBody>
 
+        {/* Content */}
+
         <Divider />
 
+        {/* Footer */}
         <CardFooter className="flex flex-col gap-6 p-6">
-          {/* Tags & Category */}
+          {/* Tags */}
           <div className="flex flex-wrap gap-2">
-            <Chip color="primary" variant="solid">
-              {post.category.name}
-            </Chip>
+            <Chip color="primary">{post.category.name}</Chip>
             {post.tags.map((tag) => (
               <Chip
                 key={tag.id}

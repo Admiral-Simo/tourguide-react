@@ -78,19 +78,27 @@ class AIService {
     };
 
     return `
-You are a professional content writer. Generate high-quality ${contentType} content based on these keywords: ${keywordString}
+You are a professional content writer and web designer. Generate high-quality ${contentType} content based on these keywords: ${keywordString}
 
 Requirements:
 - Content type: ${contentTypeInstructions[contentType]}
 - Tone: ${tone}
 - Length: ${lengthGuide[length]}
 - Make it engaging and well-structured
-- Use proper formatting with headings and paragraphs
-- Ensure the content is original and informative
+
+IMPORTANT: Return ONLY properly formatted HTML content with inline styles. No explanations, no code blocks, no markdown.
+Use these styling guidelines:
+- Wrap content in proper HTML tags (h1, h2, h3, p, strong, em, ul, li, etc.)
+- Add colorful inline styles: style="color: #hexcode"
+- Use background colors for emphasis: style="background-color: #hexcode; padding: 8px; border-radius: 4px"
+- Add gradients where appropriate: style="background: linear-gradient(135deg, #color1, #color2); padding: 10px; border-radius: 6px"
+- Make headings visually appealing with colors and styling
+- Use bold and italic formatting strategically
+- Create engaging visual hierarchy
 
 Keywords to focus on: ${keywordString}
 
-Generate the content now:
+Generate the styled HTML content now:
 `;
   }
 
@@ -102,7 +110,7 @@ Generate the content now:
       : 'Focus on overall improvement';
 
     return `
-You are a professional content editor. Analyze and improve the following content for ${targetAudience}.
+You are a professional content editor and web designer. Analyze and improve the following content for ${targetAudience}.
 
 ${improvementFocus}
 
@@ -111,26 +119,17 @@ Original content:
 ${content}
 """
 
-Please provide:
-1. An improved version of the content with better flow, clarity, and engagement
-2. Specific changes made and why
-3. A quality score from 1-10
-4. Recommendations for further improvement
+IMPORTANT: Return ONLY the improved HTML content with inline styles for colors, backgrounds, and formatting. 
+Do not include any explanations, JSON, or code blocks.
+Make the content visually appealing with:
+- Colorful text (use inline style="color: #hexcode")
+- Background colors for important sections (use inline style="background-color: #hexcode; padding: 10px; border-radius: 5px")
+- Gradient backgrounds where appropriate (use inline style="background: linear-gradient(...)")
+- Bold and italic formatting
+- Proper paragraph and heading structure
+- Engaging visual hierarchy
 
-Format your response as JSON with this structure:
-{
-  "improvedContent": "the improved content here",
-  "changes": [
-    {
-      "type": "grammar|style|structure|engagement",
-      "original": "original text",
-      "improved": "improved text", 
-      "reason": "explanation of change"
-    }
-  ],
-  "overallScore": number,
-  "recommendations": ["recommendation 1", "recommendation 2"]
-}
+Return only the styled HTML content:
 `;
   }
 
@@ -143,14 +142,17 @@ Format your response as JSON with this structure:
       const prompt = this.createContentPrompt(request);
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      const content = response.text();
+      let content = response.text().trim();
+
+      // Clean the content of any markdown code blocks or unwanted text
+      content = this.cleanStyledContent(content);
 
       return {
-        content: content.trim(),
+        content: content,
         suggestions: [
-          "Consider adding more specific examples",
-          "You might want to include relevant statistics",
-          "Consider adding a call-to-action at the end"
+          "Review the generated styling and adjust colors as needed",
+          "Consider adding more interactive elements or call-to-actions",
+          "You might want to include relevant images or media"
         ]
       };
     } catch (error: any) {
@@ -166,31 +168,84 @@ Format your response as JSON with this structure:
 
     try {
       const prompt = this.createStylingPrompt(request);
+      console.log("Styling prompt:", prompt);
+      
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      const text = response.text();
+      let improvedContent = response.text().trim();
+      
+      console.log("Raw AI response for styling:", improvedContent);
+      
+      // Clean the content of any markdown code blocks or unwanted text
+      improvedContent = this.cleanStyledContent(improvedContent);
+      
+      console.log("Cleaned improved content:", improvedContent);
 
-      // Try to parse JSON response
-      try {
-        const parsed = JSON.parse(text);
-        return parsed;
-      } catch (parseError) {
-        // If JSON parsing fails, return a formatted response
-        return {
-          improvedContent: text,
-          changes: [],
-          overallScore: 7,
-          recommendations: [
-            "Review the AI-generated improvements",
-            "Consider the suggested changes",
-            "Maintain your unique voice while improving clarity"
-          ]
-        };
-      }
+      return {
+        improvedContent: improvedContent,
+        changes: [
+          {
+            type: 'style',
+            original: 'Plain text',
+            improved: 'Styled HTML with colors and formatting',
+            reason: 'Added visual styling and colors for better engagement'
+          }
+        ],
+        overallScore: 8,
+        recommendations: [
+          "Content has been enhanced with colors and styling",
+          "Visual hierarchy improved with proper formatting",
+          "Review the changes and adjust colors as needed"
+        ]
+      };
     } catch (error: any) {
       console.error("Error styling content:", error);
       throw new Error(`Failed to style content: ${error.message}`);
     }
+  }
+
+  private cleanStyledContent(content: string): string {
+    // Remove markdown code blocks and clean up the content
+    let cleaned = content
+      .replace(/```html\s*/gi, '') // Remove opening HTML code blocks
+      .replace(/```\s*/g, '') // Remove closing code blocks
+      .replace(/^\s*html\s*/gmi, '') // Remove standalone 'html' text
+      .replace(/^Here's the.*$/gmi, '') // Remove explanatory text starting with "Here's"
+      .replace(/^The improved.*$/gmi, '') // Remove explanatory text starting with "The improved"
+      .replace(/^Here is.*$/gmi, '') // Remove explanatory text starting with "Here is"
+      .replace(/^Below is.*$/gmi, '') // Remove explanatory text starting with "Below is"
+      .replace(/^This is.*$/gmi, '') // Remove explanatory text starting with "This is"
+      .replace(/^\*\*.*\*\*$/gmi, '') // Remove markdown bold explanations
+      .replace(/^---+$/gm, '') // Remove markdown horizontal rules
+      .trim();
+    
+    // Remove multiple consecutive newlines
+    cleaned = cleaned.replace(/\n\s*\n\s*\n/g, '\n\n');
+    
+    // Ensure content doesn't start with unwanted prefixes
+    const unwantedPrefixes = ['html', 'content:', 'output:', 'result:'];
+    for (const prefix of unwantedPrefixes) {
+      if (cleaned.toLowerCase().startsWith(prefix)) {
+        cleaned = cleaned.substring(prefix.length).trim();
+        if (cleaned.startsWith(':')) {
+          cleaned = cleaned.substring(1).trim();
+        }
+      }
+    }
+    
+    // If content doesn't start with HTML tags and isn't empty, wrap it in a paragraph
+    if (cleaned && !cleaned.startsWith('<') && !cleaned.includes('<')) {
+      cleaned = `<p style="color: #2d3748; line-height: 1.6;">${cleaned}</p>`;
+    }
+    
+    // Ensure we have valid HTML structure
+    if (cleaned && !cleaned.includes('<')) {
+      // If no HTML tags found, treat as plain text and wrap appropriately
+      const lines = cleaned.split('\n').filter(line => line.trim());
+      cleaned = lines.map(line => `<p style="color: #2d3748; line-height: 1.6; margin-bottom: 1em;">${line.trim()}</p>`).join('');
+    }
+    
+    return cleaned;
   }
 
   public async generateKeywordSuggestions(topic: string): Promise<string[]> {
@@ -204,7 +259,7 @@ Format your response as JSON with this structure:
       const response = await result.response;
       const text = response.text();
       
-      return text.split(',').map(keyword => keyword.trim()).filter(Boolean);
+      return text.split(',').map((keyword: string) => keyword.trim()).filter(Boolean);
     } catch (error) {
       console.error("Error generating keyword suggestions:", error);
       return [];

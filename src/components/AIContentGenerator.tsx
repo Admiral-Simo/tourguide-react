@@ -12,7 +12,6 @@ import {
   Chip,
   Card,
   CardBody,
-  Textarea,
   Spinner,
   Divider,
 } from "@nextui-org/react";

@@ -24,6 +24,11 @@ import Heading from "@tiptap/extension-heading";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
+import Color from "@tiptap/extension-color";
+import TextStyle from "@tiptap/extension-text-style";
+import TextAlign from "@tiptap/extension-text-align";
+import Highlight from "@tiptap/extension-highlight";
+import Underline from "@tiptap/extension-underline";
 import {
   Bold,
   Italic,
@@ -84,7 +89,7 @@ const PostForm: React.FC<PostFormProps> = ({
   const [currentTab, setCurrentTab] = useState("content");
   const [lat, setLat] = useState<number | undefined>(initialPost?.latitude);
   const [lng, setLng] = useState<number | undefined>(initialPost?.longitude);
-  
+
   // AI modal states
   const [isAIGeneratorOpen, setIsAIGeneratorOpen] = useState(false);
   const [isAIStylingOpen, setIsAIStylingOpen] = useState(false);
@@ -108,6 +113,16 @@ const PostForm: React.FC<PostFormProps> = ({
         keepAttributes: false,
       }),
       ListItem,
+      // Text styling extensions for AI-generated content
+      TextStyle,
+      Color,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Underline,
     ],
     content: initialPost?.content || "",
     editorProps: {
@@ -182,26 +197,81 @@ const PostForm: React.FC<PostFormProps> = ({
   };
 
   const handleHeadingSelect = (level: number) => {
-    editor?.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run();
+    editor
+      ?.chain()
+      .focus()
+      .toggleHeading({ level: level as 1 | 2 | 3 })
+      .run();
   };
 
   // AI callback functions
   const handleAIContentGenerated = (content: string) => {
-    if (editor) {
-      // If editor is empty, replace content, otherwise append
-      const currentContent = editor.getHTML();
-      if (!currentContent || currentContent === "<p></p>") {
-        editor.commands.setContent(content);
-      } else {
-        editor.commands.insertContent("<br><br>" + content);
+    console.log("Received generated content:", content);
+    if (editor && content) {
+      try {
+        // Clean and validate the HTML content
+        const cleanContent = content.trim();
+
+        // Check if editor is empty or has minimal content
+        const currentContent = editor.getHTML();
+        const isEmpty =
+          !currentContent ||
+          currentContent === "<p></p>" ||
+          currentContent.trim() === "";
+
+        if (isEmpty) {
+          // Replace all content with new generated content
+          console.log("Setting new content (editor was empty)");
+          editor.commands.setContent(cleanContent, false);
+        } else {
+          // Append new content with proper spacing
+          console.log("Appending content to existing content");
+          editor.commands.insertContent("<br><br>" + cleanContent);
+        }
+
+        // Focus the editor
+        setTimeout(() => {
+          editor.commands.focus("end");
+        }, 100);
+
+        console.log("Generated content applied successfully");
+      } catch (error) {
+        console.error("Error applying generated content:", error);
+        // Fallback: basic insertion
+        editor.commands.insertContent(content);
       }
     }
     setIsAIGeneratorOpen(false);
   };
 
   const handleAIContentImproved = (improvedContent: string) => {
-    if (editor) {
-      editor.commands.setContent(improvedContent);
+    console.log("Received improved content:", improvedContent);
+    if (editor && improvedContent && improvedContent.trim()) {
+      try {
+        // Clean the content first
+        const cleanContent = improvedContent.trim();
+        console.log("Clean improved content:", cleanContent);
+
+        // Use TipTap's setContent with proper HTML handling
+        console.log("Using TipTap setContent for HTML content");
+        editor.commands.setContent(cleanContent, false);
+
+        // Ensure the content is properly rendered
+        setTimeout(() => {
+          // Force a re-render and focus
+          editor.commands.focus("end");
+          console.log(
+            "Content set successfully. Final HTML:",
+            editor.getHTML(),
+          );
+        }, 100);
+      } catch (error) {
+        console.error("Error applying improved content:", error);
+        // Fallback: basic setContent
+        editor.commands.setContent(improvedContent);
+      }
+    } else {
+      console.warn("Improved content is empty or editor not available");
     }
     setIsAIStylingOpen(false);
   };
@@ -214,13 +284,13 @@ const PostForm: React.FC<PostFormProps> = ({
   const calculateProgress = () => {
     let completed = 0;
     const total = 5; // title, content, category, location, tags (optional)
-    
+
     if (title.trim()) completed++;
     if (editor?.getHTML() && editor?.getHTML() !== "<p></p>") completed++;
     if (categoryId) completed++;
     if (lat !== undefined && lng !== undefined) completed++;
     if (selectedTags.length > 0) completed++; // Optional but counts toward progress
-    
+
     return (completed / total) * 100;
   };
 
@@ -241,7 +311,9 @@ const PostForm: React.FC<PostFormProps> = ({
                   {initialPost ? "Edit Post" : "Create New Post"}
                 </h2>
                 <p className="text-small text-default-500">
-                  {initialPost ? "Update your post details" : "Share your story with the world"}
+                  {initialPost
+                    ? "Update your post details"
+                    : "Share your story with the world"}
                 </p>
               </div>
             </div>
@@ -249,26 +321,27 @@ const PostForm: React.FC<PostFormProps> = ({
               <span className="text-small text-default-500">
                 {Math.round(progressPercentage)}% complete
               </span>
-              <Progress 
-                value={progressPercentage} 
-                className="w-20" 
+              <Progress
+                value={progressPercentage}
+                className="w-20"
                 color="primary"
                 size="sm"
               />
             </div>
           </div>
         </CardHeader>
-        
+
         <CardBody className="pt-0">
-          <Tabs 
-            selectedKey={currentTab} 
+          <Tabs
+            selectedKey={currentTab}
             onSelectionChange={(key) => setCurrentTab(key as string)}
             variant="underlined"
             classNames={{
-              tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+              tabList:
+                "gap-6 w-full relative rounded-none p-0 border-b border-divider",
               cursor: "w-full bg-primary",
               tab: "max-w-fit px-0 h-12",
-              tabContent: "group-data-[selected=true]:text-primary"
+              tabContent: "group-data-[selected=true]:text-primary",
             }}
           >
             <Tab
@@ -277,9 +350,11 @@ const PostForm: React.FC<PostFormProps> = ({
                 <div className="flex items-center gap-2">
                   <Type className="w-4 h-4" />
                   <span>Content</span>
-                  {(title.trim() && editor?.getHTML() && editor?.getHTML() !== "<p></p>") && 
-                    <div className="w-2 h-2 bg-success rounded-full" />
-                  }
+                  {title.trim() &&
+                    editor?.getHTML() &&
+                    editor?.getHTML() !== "<p></p>" && (
+                      <div className="w-2 h-2 bg-success rounded-full" />
+                    )}
                 </div>
               }
             >
@@ -297,7 +372,7 @@ const PostForm: React.FC<PostFormProps> = ({
                     size="lg"
                     classNames={{
                       input: "text-lg",
-                      inputWrapper: "h-14"
+                      inputWrapper: "h-14",
                     }}
                   />
                 </div>
@@ -312,7 +387,7 @@ const PostForm: React.FC<PostFormProps> = ({
                       Use the toolbar below to format your content
                     </div>
                   </div>
-                  
+
                   {/* Enhanced Toolbar */}
                   <Card className="border border-default-200 shadow-sm">
                     <CardBody className="p-3">
@@ -325,9 +400,13 @@ const PostForm: React.FC<PostFormProps> = ({
                               endContent={<ChevronDown size={14} />}
                               className="min-w-20"
                             >
-                              {editor?.isActive("heading", { level: 1 }) ? "H1" :
-                               editor?.isActive("heading", { level: 2 }) ? "H2" :
-                               editor?.isActive("heading", { level: 3 }) ? "H3" : "Text"}
+                              {editor?.isActive("heading", { level: 1 })
+                                ? "H1"
+                                : editor?.isActive("heading", { level: 2 })
+                                  ? "H2"
+                                  : editor?.isActive("heading", { level: 3 })
+                                    ? "H3"
+                                    : "Text"}
                             </Button>
                           </DropdownTrigger>
                           <DropdownMenu
@@ -347,17 +426,27 @@ const PostForm: React.FC<PostFormProps> = ({
                           size="sm"
                           isIconOnly
                           variant={editor?.isActive("bold") ? "solid" : "flat"}
-                          color={editor?.isActive("bold") ? "primary" : "default"}
-                          onClick={() => editor?.chain().focus().toggleBold().run()}
+                          color={
+                            editor?.isActive("bold") ? "primary" : "default"
+                          }
+                          onClick={() =>
+                            editor?.chain().focus().toggleBold().run()
+                          }
                         >
                           <Bold size={14} />
                         </Button>
                         <Button
                           size="sm"
                           isIconOnly
-                          variant={editor?.isActive("italic") ? "solid" : "flat"}
-                          color={editor?.isActive("italic") ? "primary" : "default"}
-                          onClick={() => editor?.chain().focus().toggleItalic().run()}
+                          variant={
+                            editor?.isActive("italic") ? "solid" : "flat"
+                          }
+                          color={
+                            editor?.isActive("italic") ? "primary" : "default"
+                          }
+                          onClick={() =>
+                            editor?.chain().focus().toggleItalic().run()
+                          }
                         >
                           <Italic size={14} />
                         </Button>
@@ -367,18 +456,34 @@ const PostForm: React.FC<PostFormProps> = ({
                         <Button
                           size="sm"
                           isIconOnly
-                          variant={editor?.isActive("bulletList") ? "solid" : "flat"}
-                          color={editor?.isActive("bulletList") ? "primary" : "default"}
-                          onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                          variant={
+                            editor?.isActive("bulletList") ? "solid" : "flat"
+                          }
+                          color={
+                            editor?.isActive("bulletList")
+                              ? "primary"
+                              : "default"
+                          }
+                          onClick={() =>
+                            editor?.chain().focus().toggleBulletList().run()
+                          }
                         >
                           <List size={14} />
                         </Button>
                         <Button
                           size="sm"
                           isIconOnly
-                          variant={editor?.isActive("orderedList") ? "solid" : "flat"}
-                          color={editor?.isActive("orderedList") ? "primary" : "default"}
-                          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                          variant={
+                            editor?.isActive("orderedList") ? "solid" : "flat"
+                          }
+                          color={
+                            editor?.isActive("orderedList")
+                              ? "primary"
+                              : "default"
+                          }
+                          onClick={() =>
+                            editor?.chain().focus().toggleOrderedList().run()
+                          }
                         >
                           <ListOrdered size={14} />
                         </Button>
@@ -406,17 +511,19 @@ const PostForm: React.FC<PostFormProps> = ({
                       </div>
                     </CardBody>
                   </Card>
-                  
+
                   {/* AI Content Tools */}
                   <Card className="border border-primary-200 bg-gradient-to-r from-primary-50 to-secondary-50 shadow-sm">
                     <CardBody className="p-4">
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium text-foreground">AI Writing Assistant</span>
+                          <span className="text-sm font-medium text-foreground">
+                            AI Writing Assistant
+                          </span>
                         </div>
                         <div className="text-xs text-default-500">
-                          Powered by Gemini AI
+                          Created by mohamed khalis student at estbm
                         </div>
                       </div>
                       <div className="flex gap-2 flex-wrap">
@@ -436,7 +543,10 @@ const PostForm: React.FC<PostFormProps> = ({
                           color="secondary"
                           startContent={<Palette size={14} />}
                           onClick={() => setIsAIStylingOpen(true)}
-                          isDisabled={!editor?.getHTML() || editor?.getHTML() === "<p></p>"}
+                          isDisabled={
+                            !editor?.getHTML() ||
+                            editor?.getHTML() === "<p></p>"
+                          }
                           className="bg-secondary-100 hover:bg-secondary-200"
                         >
                           Improve Style
@@ -444,10 +554,10 @@ const PostForm: React.FC<PostFormProps> = ({
                       </div>
                     </CardBody>
                   </Card>
-                  
+
                   <div className="border border-default-200 rounded-lg overflow-hidden">
-                    <EditorContent 
-                      editor={editor} 
+                    <EditorContent
+                      editor={editor}
                       className="prose max-w-none min-h-[400px] p-4 focus-within:ring-2 focus-within:ring-primary focus-within:ring-opacity-20"
                     />
                   </div>
@@ -467,9 +577,9 @@ const PostForm: React.FC<PostFormProps> = ({
                 <div className="flex items-center gap-2">
                   <Tags className="w-4 h-4" />
                   <span>Organization</span>
-                  {(categoryId && selectedTags.length > 0) && 
+                  {categoryId && selectedTags.length > 0 && (
                     <div className="w-2 h-2 bg-success rounded-full" />
-                  }
+                  )}
                 </div>
               }
             >
@@ -504,7 +614,7 @@ const PostForm: React.FC<PostFormProps> = ({
                       {selectedTags.length}/10 tags selected
                     </div>
                   </div>
-                  
+
                   {/* Tag Selection */}
                   <Select
                     label="Add Tags"
@@ -524,7 +634,7 @@ const PostForm: React.FC<PostFormProps> = ({
                       ))}
                     </SelectSection>
                   </Select>
-                  
+
                   {/* Selected Tags Display */}
                   {selectedTags.length > 0 && (
                     <div className="flex flex-wrap gap-2 p-3 bg-default-50 rounded-lg">
@@ -551,9 +661,9 @@ const PostForm: React.FC<PostFormProps> = ({
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   <span>Location</span>
-                  {(lat !== undefined && lng !== undefined) && 
+                  {lat !== undefined && lng !== undefined && (
                     <div className="w-2 h-2 bg-success rounded-full" />
-                  }
+                  )}
                 </div>
               }
             >
@@ -567,7 +677,7 @@ const PostForm: React.FC<PostFormProps> = ({
                       Click on the map to select location
                     </div>
                   </div>
-                  
+
                   <Card className="border border-default-200">
                     <CardBody className="p-0">
                       <CreateUpdatePostMapComponent
@@ -577,14 +687,14 @@ const PostForm: React.FC<PostFormProps> = ({
                       />
                     </CardBody>
                   </Card>
-                  
+
                   {errors.location && (
                     <div className="text-danger text-sm flex items-center gap-1 mt-1">
                       <X size={14} />
                       {errors.location}
                     </div>
                   )}
-                  
+
                   {lat !== undefined && lng !== undefined && (
                     <div className="p-3 bg-success-50 rounded-lg">
                       <div className="text-xs text-success-700">
@@ -631,7 +741,9 @@ const PostForm: React.FC<PostFormProps> = ({
                 <Card className="bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200">
                   <CardBody className="p-4">
                     <div className="space-y-3">
-                      <h4 className="font-semibold text-sm text-primary">Post Summary</h4>
+                      <h4 className="font-semibold text-sm text-primary">
+                        Post Summary
+                      </h4>
                       <div className="grid grid-cols-2 gap-4 text-xs">
                         <div className="space-y-1">
                           <div className="text-default-600">Title:</div>
@@ -642,19 +754,24 @@ const PostForm: React.FC<PostFormProps> = ({
                         <div className="space-y-1">
                           <div className="text-default-600">Category:</div>
                           <div className="font-medium">
-                            {categories.find(cat => cat.id === categoryId)?.name || "Not selected"}
+                            {categories.find((cat) => cat.id === categoryId)
+                              ?.name || "Not selected"}
                           </div>
                         </div>
                         <div className="space-y-1">
                           <div className="text-default-600">Tags:</div>
                           <div className="font-medium">
-                            {selectedTags.length > 0 ? `${selectedTags.length} selected` : "None"}
+                            {selectedTags.length > 0
+                              ? `${selectedTags.length} selected`
+                              : "None"}
                           </div>
                         </div>
                         <div className="space-y-1">
                           <div className="text-default-600">Location:</div>
                           <div className="font-medium">
-                            {lat !== undefined && lng !== undefined ? "Set" : "Not set"}
+                            {lat !== undefined && lng !== undefined
+                              ? "Set"
+                              : "Not set"}
                           </div>
                         </div>
                       </div>
@@ -677,7 +794,7 @@ const PostForm: React.FC<PostFormProps> = ({
             >
               Cancel
             </Button>
-            
+
             <div className="flex gap-2">
               {currentTab !== "settings" && (
                 <Button
@@ -688,9 +805,9 @@ const PostForm: React.FC<PostFormProps> = ({
                   Review & Publish
                 </Button>
               )}
-              <Button 
-                color="primary" 
-                type="submit" 
+              <Button
+                color="primary"
+                type="submit"
                 isLoading={isSubmitting}
                 startContent={!isSubmitting ? <Save size={16} /> : undefined}
               >
@@ -700,7 +817,7 @@ const PostForm: React.FC<PostFormProps> = ({
           </div>
         </CardBody>
       </Card>
-      
+
       {/* AI Content Generator Modal */}
       <AIContentGenerator
         isOpen={isAIGeneratorOpen}
@@ -708,7 +825,7 @@ const PostForm: React.FC<PostFormProps> = ({
         onContentGenerated={handleAIContentGenerated}
         currentTitle={title}
       />
-      
+
       {/* AI Content Styling Modal */}
       <AIContentStyling
         isOpen={isAIStylingOpen}
