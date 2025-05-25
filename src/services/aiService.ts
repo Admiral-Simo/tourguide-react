@@ -85,20 +85,22 @@ Requirements:
 - Tone: ${tone}
 - Length: ${lengthGuide[length]}
 - Make it engaging and well-structured
+- Use proper formatting with headings and paragraphs
+- Ensure the content is original and informative
 
-IMPORTANT: Return ONLY properly formatted HTML content with inline styles. No explanations, no code blocks, no markdown.
-Use these styling guidelines:
-- Wrap content in proper HTML tags (h1, h2, h3, p, strong, em, ul, li, etc.)
-- Add colorful inline styles: style="color: #hexcode"
-- Use background colors for emphasis: style="background-color: #hexcode; padding: 8px; border-radius: 4px"
-- Add gradients where appropriate: style="background: linear-gradient(135deg, #color1, #color2); padding: 10px; border-radius: 6px"
-- Make headings visually appealing with colors and styling
-- Use bold and italic formatting strategically
-- Create engaging visual hierarchy
+IMPORTANT: Return ONLY the content in HTML format with inline styles for colors, backgrounds, and formatting. 
+Do not include any explanations, JSON, or code blocks.
+Make the content visually appealing with:
+- Colorful text (use inline style="color: #hexcode")
+- Background colors for important sections (use inline style="background-color: #hexcode; padding: 10px; border-radius: 5px")
+- Gradient backgrounds where appropriate (use inline style="background: linear-gradient(...)")
+- Bold and italic formatting
+- Proper paragraph and heading structure
+- Engaging visual hierarchy
 
 Keywords to focus on: ${keywordString}
 
-Generate the styled HTML content now:
+Return only the styled HTML content:
 `;
   }
 
@@ -140,19 +142,25 @@ Return only the styled HTML content:
 
     try {
       const prompt = this.createContentPrompt(request);
+      console.log("Generating content with prompt:", prompt);
+      
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       let content = response.text().trim();
 
+      console.log("Raw AI response for content generation:", content);
+
       // Clean the content of any markdown code blocks or unwanted text
       content = this.cleanStyledContent(content);
+
+      console.log("Cleaned generated content:", content);
 
       return {
         content: content,
         suggestions: [
-          "Review the generated styling and adjust colors as needed",
-          "Consider adding more interactive elements or call-to-actions",
-          "You might want to include relevant images or media"
+          "Consider adding more specific examples",
+          "You might want to include relevant statistics",
+          "Consider adding a call-to-action at the end"
         ]
       };
     } catch (error: any) {
@@ -210,39 +218,41 @@ Return only the styled HTML content:
       .replace(/```html\s*/gi, '') // Remove opening HTML code blocks
       .replace(/```\s*/g, '') // Remove closing code blocks
       .replace(/^\s*html\s*/gmi, '') // Remove standalone 'html' text
-      .replace(/^Here's the.*$/gmi, '') // Remove explanatory text starting with "Here's"
-      .replace(/^The improved.*$/gmi, '') // Remove explanatory text starting with "The improved"
-      .replace(/^Here is.*$/gmi, '') // Remove explanatory text starting with "Here is"
-      .replace(/^Below is.*$/gmi, '') // Remove explanatory text starting with "Below is"
-      .replace(/^This is.*$/gmi, '') // Remove explanatory text starting with "This is"
-      .replace(/^\*\*.*\*\*$/gmi, '') // Remove markdown bold explanations
-      .replace(/^---+$/gm, '') // Remove markdown horizontal rules
+      .replace(/^Here's the.*content.*$/gmi, '') // Remove explanatory text
+      .replace(/^The.*content.*$/gmi, '') // Remove explanatory text
+      .replace(/^Here is the.*$/gmi, '') // Remove explanatory text
+      .replace(/^Below is the.*$/gmi, '') // Remove explanatory text
       .trim();
     
-    // Remove multiple consecutive newlines
-    cleaned = cleaned.replace(/\n\s*\n\s*\n/g, '\n\n');
-    
     // Ensure content doesn't start with unwanted prefixes
-    const unwantedPrefixes = ['html', 'content:', 'output:', 'result:'];
+    if (cleaned.toLowerCase().startsWith('html')) {
+      cleaned = cleaned.substring(4).trim();
+    }
+    
+    // Remove any leading explanatory text that might start with common phrases
+    const unwantedPrefixes = [
+      'here is',
+      'here\'s',
+      'below is',
+      'the content',
+      'generated content',
+      'html content'
+    ];
+    
     for (const prefix of unwantedPrefixes) {
-      if (cleaned.toLowerCase().startsWith(prefix)) {
-        cleaned = cleaned.substring(prefix.length).trim();
-        if (cleaned.startsWith(':')) {
-          cleaned = cleaned.substring(1).trim();
-        }
-      }
+      const regex = new RegExp(`^${prefix}[^<]*`, 'i');
+      cleaned = cleaned.replace(regex, '').trim();
     }
     
-    // If content doesn't start with HTML tags and isn't empty, wrap it in a paragraph
-    if (cleaned && !cleaned.startsWith('<') && !cleaned.includes('<')) {
-      cleaned = `<p style="color: #2d3748; line-height: 1.6;">${cleaned}</p>`;
-    }
-    
-    // Ensure we have valid HTML structure
-    if (cleaned && !cleaned.includes('<')) {
-      // If no HTML tags found, treat as plain text and wrap appropriately
+    // If content doesn't start with HTML tags, wrap it in a paragraph
+    if (cleaned && !cleaned.startsWith('<')) {
+      // Check if it's multiple lines/paragraphs
       const lines = cleaned.split('\n').filter(line => line.trim());
-      cleaned = lines.map(line => `<p style="color: #2d3748; line-height: 1.6; margin-bottom: 1em;">${line.trim()}</p>`).join('');
+      if (lines.length > 1) {
+        cleaned = lines.map(line => `<p>${line.trim()}</p>`).join('\n');
+      } else {
+        cleaned = `<p>${cleaned}</p>`;
+      }
     }
     
     return cleaned;

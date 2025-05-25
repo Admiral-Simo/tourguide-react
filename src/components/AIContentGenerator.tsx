@@ -315,9 +315,10 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
                   
                   <div className="max-h-64 overflow-y-auto">
                     <div className="prose prose-sm max-w-none">
-                      <div className="whitespace-pre-wrap text-sm">
-                        {generatedContent.content}
-                      </div>
+                      <div 
+                        className="text-sm"
+                        dangerouslySetInnerHTML={{ __html: generatedContent.content }}
+                      />
                     </div>
                   </div>
                   

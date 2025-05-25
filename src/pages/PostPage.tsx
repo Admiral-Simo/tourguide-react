@@ -122,9 +122,9 @@ const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
         "img",
         "hr",
       ],
-      ALLOWED_ATTR: ["href", "target", "rel", "class", "src", "alt"],
+      ALLOWED_ATTR: ["href", "target", "rel", "class", "src", "alt", "style"],
       ADD_ATTR: ["target", "rel"],
-      FORBID_TAGS: ["style", "script"],
+      FORBID_TAGS: ["script"],
     }),
   });
 
